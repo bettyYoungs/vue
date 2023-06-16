@@ -1,5 +1,5 @@
 /* @flow */
-
+//初始化vue的静态方法
 import config from '../config'
 import { initUse } from './use'
 import { initMixin } from './mixin'
@@ -52,6 +52,7 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   }
 
   Vue.options = Object.create(null)
+  // 初始化全局组件、指令、过滤器
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
@@ -60,10 +61,14 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
 
+  //注册全局组件 keep-alive
   extend(Vue.options.components, builtInComponents)
 
   initUse(Vue)
+  //注册全局mixin
   initMixin(Vue)
+  //开发自定义组件时使用 基于传入的options返回一个组件的构造函数 返回vue的构造函数？？
   initExtend(Vue)
+  //注册指令、filter、extends</T>
   initAssetRegisters(Vue)
 }

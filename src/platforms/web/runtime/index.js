@@ -27,10 +27,11 @@ Vue.config.getTagNamespace = getTagNamespace
 Vue.config.isUnknownElement = isUnknownElement
 
 // install platform runtime directives & components
-extend(Vue.options.directives, platformDirectives)
-extend(Vue.options.components, platformComponents)
+extend(Vue.options.directives, platformDirectives) //注册指令 v-model v-show
+extend(Vue.options.components, platformComponents) //注册组件 transition transition-group
 
 // install platform patch function
+//snabbdom 中patch函数把虚拟dom转换成真实dom
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method

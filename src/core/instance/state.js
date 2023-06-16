@@ -48,7 +48,9 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
+  //把props中的成员转换成响应式数据并注入到vm实例中来
   if (opts.props) initProps(vm, opts.props)
+  //把methods中的成员注入到vm实例中，注入前判断是否与props中有命名冲突等
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
     initData(vm)
@@ -112,8 +114,8 @@ function initProps (vm: Component, propsOptions: Object) {
 function initData (vm: Component) {
   let data = vm.$options.data
   data = vm._data = typeof data === 'function'
-    ? getData(data, vm)
-    : data || {}
+    ? getData(data, vm) //初始化组件中的data
+    : data || {} //vue示例中的data是个对象
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -123,6 +125,7 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  //判断data、props、methods是否有重名
   const keys = Object.keys(data)
   const props = vm.$options.props
   const methods = vm.$options.methods
@@ -144,6 +147,7 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      //把data中的属性注入到vue实例中来
       proxy(vm, `_data`, key)
     }
   }
@@ -276,6 +280,7 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
+      //方法判断key是否以_或$开头
       if ((key in vm) && isReserved(key)) {
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
@@ -283,7 +288,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
-    vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
+    vm[key] = typeof methods[key] !== 'function' ? noop/** 空函数 */ : bind(methods[key], vm)
   }
 }
 
