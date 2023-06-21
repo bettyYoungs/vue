@@ -48,3 +48,69 @@ initExtend(Vue) ？？ 怎么用
  nextTick 实现原理
 
  ### zce caz脚手架
+ # 3-2 参考答案
+
+
+
+## 1、 请简述 Vue 首次渲染过程。
+
+解析：
+
+1. Vue 初始化，添加实例成员、静态成员，并在原型上挂载__patch__方法和$mount方法。
+
+2. 初始化结束，调用new Vue()。在new Vue()的过程中，调用this.init()方法, 给vue的实例挂载各种功能。
+
+3. 在 this.init() 内部最终会调用 entry-runtime-with-compiler.js中的 vm.$mount(),用于获取render函数。
+
+4.  $mount 获取 render 过程: 如果用户没有传入render,会将template编译为render，如果template也没有，则将el中的内容作为模版，通过 compileToFunctions() 生成render。
+
+5. 接下来调用 runtime/index.js 中的 $mount, 重新获取 el 并调用 mountComponent() 方法。
+    mountComponent 用于触发 beforeMount，定义 updateComponent,创建watcher实例，触发mounted,并最终返回vm实例。
+
+6.  创建完watcher的实例后会调用一次 watcher.get() 方法，该方法会调用updateComponent(), updateComponent()又会调用 vm.render() 以及vm.update(),vm._update()会调用vm.**patch**()挂载真实dom,并将真实dom记录于vm.$el中。
+
+   
+
+## 2、 请简述 Vue 响应式原理。
+
+解析：
+
+- 响应式处理整体过程为initState() => initData() => observe()
+
+- 其中observe是响应式处理的入口，通过该方法为data对象转化为响应式对象。
+
+- observe方法接收的是对象且该对象不是响应式时，会为该对象创建一个observe对象，会调用Observer类
+
+- Observer类中判断该value是数组还是对象，进行不同的处理
+  - 数组的响应化处理，是重写push,pop,sort等会修改原数组的方法，调用对应的notify.然后遍历数组中的成员，判断其类型决定是否调用observe方法
+  - 对象的响应化处理，会调用walk方法，遍历对象中的每个属性，调用defineReactive
+  
+- defineReactive的核心是为每一个属性定义getter和setter,getter中收集依赖，setter中派发更新,即调用dep.notify。
+
+- dep.notify()会调用watcher的update()方法。如果该watcher未被处理，会被添加到queue队列中，并调用flushSchedulerQueue()方法，该方法会触发对应的钩子函数以及调用watcher.run()更新视图。
+
+  
+
+
+
+## 3、 请简述虚拟 DOM 中 Key 的作用和好处。
+
+解析：
+
+​    作用： 标识节点在当前层级的唯一性。
+​    好处： 在执行 updateChildren 对比新旧 Vnode 的子节点差异时，通过设置 key 可以进行更高效的比较，便于复用节点。 降低创建销毁节点成本，从而减少 dom 操作，提升更新 dom 的性能。
+
+  
+
+​      
+
+## 4、 请简述 Vue 中模版编译过程。
+
+解析：
+
+- 模版编译入口函数是compileToFunctions,首先判断是否有缓存好的render函数，如果没有，则调用compile。compile用作于合并options, 它将用户传入的options和初始化的options合并起来。然后将template和合并好的options传递给baseCompile。
+- 在 baseCompile 中完成了模版编译的核心部分：
+  - 调用parse()将template转换成AST对象；
+  - 调用optimize()优化 AST tree；
+  - 调用 generate() 将优化后的AST tree转换成字符串形式的代码。
+- 最后回到compileToFunctions，通过createFunction()将字符串形式的代码转换为函数,并将其挂载到Vue实例的options对应的属性中。
